@@ -1,306 +1,533 @@
 <!DOCTYPE html>
-<html lang="de"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Gravity Simulator – Springen im Sonnensystem</title>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Springen im Sonnensystem</title>
 <style>
-:root {
-  --bg:#f5f4f0; --bar:#fbfaf7; --pn:#ffffff; --ln:#d9d9d2;
-  --tx:#222722; --mu:#656e67; --bl:#355f4b; --rd:#355f4b;
-  --subtle:#eeefe9; --forest:#244a39;
-  color-scheme:light; box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px)
-}
-html {scroll-padding-top:70px}
-*,*::before,*::after {box-sizing:inherit}
-body {margin:0;font:15px/1.65 'Segoe UI',Arial,sans-serif;color:var(--tx);background:var(--bg);letter-spacing:.005em}
-button,select,input {font-family:inherit}
-.bar {height:auto;min-height:70px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 clamp(20px,4vw,66px);background:var(--bar);border-bottom:1px solid var(--ln)}
-.brand {font-size:15px;font-weight:750;letter-spacing:-.025em;white-space:nowrap}
-.brand::before {content:'';display:inline-block;width:12px;height:12px;border:3px solid var(--forest);border-radius:50%;vertical-align:-1px;margin-right:11px}
-nav {display:flex;align-items:center;gap:22px;flex-wrap:wrap}
-nav a {color:var(--mu);font-size:12px;font-weight:600;letter-spacing:.035em;text-decoration:none;padding:25px 0 23px;border-bottom:2px solid transparent;transition:color .15s}
-nav a:hover {color:var(--tx)}
-nav a.on {color:var(--forest);border-bottom-color:var(--forest)}
-:focus-visible {outline:2px solid var(--forest);outline-offset:3px}
-.tab {display:none}.tab.on {display:block}
-.pg {max-width:1120px;margin:auto;padding:54px 32px 88px}
-h1,h2,h3 {letter-spacing:-.04em;line-height:1.18;color:#202b24}
-h1 {font-weight:690;font-size:clamp(38px,5.2vw,68px);max-width:790px;margin:0 0 21px}
-h2 {font-size:clamp(30px,3.1vw,43px);font-weight:680;margin:0 0 16px}
-h3 {font-size:19px;font-weight:680;margin:42px 0 16px}
-p {margin:0 0 18px}.mu {color:var(--mu)}
-#t-start .pg::before {content:'INTERAKTIVES PHYSIKPROJEKT  /  SONNENSYSTEM';display:block;color:var(--forest);font-size:11px;letter-spacing:.16em;font-weight:750;margin-bottom:25px}
-#t-start .pg>p:first-of-type {max-width:670px!important;font-size:17px!important;line-height:1.8;color:#59635a}
-#t-start .pg>.row2 {margin:31px 0 39px}
-.btn {font-size:13px;font-weight:670;letter-spacing:.015em;color:#fff;background:var(--forest);border:1px solid var(--forest);border-radius:5px;padding:12px 18px;cursor:pointer;transition:background .15s,border-color .15s,transform .15s;white-space:normal}
-.btn:hover,.btn.r:hover {background:#173628;border-color:#173628}
-.btn:active {transform:translateY(1px)}
-.btn.r {background:var(--forest);border-color:var(--forest)}
-.btn.g {background:transparent;border:1px solid #cbd1ca;color:var(--forest);font-weight:600}
-.btn.g:hover {background:#e8ede7;border-color:var(--forest)}
-.row2 {display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
-.card {background:var(--pn);border:1px solid var(--ln);border-radius:7px;padding:23px 26px}
-#fact {max-width:100%!important;background:#e8ede6;border-color:#d9e2d8;font-size:16px;line-height:1.8}
-#t-start ol {margin:0 0 32px!important;padding:0!important;list-style:none;counter-reset:steps;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-#t-start ol li {counter-increment:steps;background:#fff;border:1px solid var(--ln);padding:22px 20px;border-radius:6px;font-size:14px;line-height:1.65}
-#t-start ol li::before {content:'0' counter(steps);display:block;font-size:12px;color:var(--forest);font-weight:800;letter-spacing:.1em;margin-bottom:21px}
-.grid {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
-.pl {display:flex;align-items:center;gap:11px;width:100%;text-align:left;font:inherit;color:var(--tx);background:transparent;border:1px solid transparent;border-radius:5px;padding:8px 10px;cursor:pointer;transition:background .15s,border-color .15s}
-.pl small {margin-left:auto;color:var(--mu);font-size:12px;font-variant-numeric:tabular-nums}
-.pl i,.dot {display:inline-block;width:9px;height:9px;border-radius:50%;flex:none}
-.pl:hover {background:#ebefea}.pl.on {background:#e5ece5;border-color:#a0b3a3;color:#1c4831;font-weight:650}
-.grid .pl {background:#fff;border-color:var(--ln);padding:20px 14px;min-height:75px}
-.grid .pl:hover {border-color:#7b9983;background:#f5f9f4}
-#t-sim.on {display:grid;grid-template-columns:286px minmax(0,1fr);height:calc(100vh - 70px);min-height:570px}
-#t-sim.fs {position:fixed;inset:0;z-index:50;height:auto;background:var(--bg)}
-#t-sim:fullscreen {height:100vh;background:var(--bg)}
-.side {background:#fbfaf7;border-right:1px solid var(--ln);padding:20px 18px 32px;overflow:auto;scrollbar-width:thin}
-.side h3 {font-size:11px;font-weight:750;letter-spacing:.13em;text-transform:uppercase;color:#647467;margin:29px 0 10px}
-.side h3:first-child {margin-top:0}
-#pls {display:grid;grid-template-columns:1fr 1fr;gap:5px}
-#pls .pl {font-size:13px;padding:9px 8px;border:1px solid #e2e5de;background:#fff}
-#pls .pl small {display:none}
-#pls .pl.on {border-color:#8ca994;background:#e9f0e7}
-.main {display:flex;flex-direction:column;min-width:0;min-height:0;background:#101820}
-.cw {position:relative;flex:1;min-height:0;overflow:hidden}
-.cw.h {flex:none;height:clamp(320px,50vh,520px);border:1px solid #d7d9d2;border-radius:7px;overflow:hidden}
-canvas {position:absolute;inset:0;width:100%;height:100%;display:block;background:#000}
-.ro {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;background:#fbfaf7;border-top:1px solid var(--ln);color:var(--tx);padding:0}
-.ro>div {padding:15px 14px;border-right:1px solid var(--ln)}
-.ro>div:last-child {border-right:0}
-.ro span {display:block;color:var(--mu);font-size:11px;margin-bottom:3px;line-height:1.45}
-.ro b {font-weight:700;font-size:19px;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
-#info {position:absolute;top:20px;right:20px;width:min(325px,calc(100% - 40px));background:rgba(250,250,246,.97);color:#26322a;border:1px solid #cfd7cf;border-radius:6px;padding:18px;box-shadow:0 12px 35px #0003}
-#info[hidden] {display:none}
-.warn {background:#faf1dc;border:1px solid #eadcb8;color:#72552c;border-radius:5px;padding:10px 12px;font-size:13px;margin-top:10px}
-label {display:block;color:var(--mu);font-size:12px;font-weight:600;margin:16px 0}
-label b {color:var(--tx);font-variant-numeric:tabular-nums}
-input[type=range] {width:100%;margin:12px 0 0;accent-color:var(--forest);cursor:pointer}
-input[type=checkbox] {accent-color:var(--forest);margin-top:3px}
-select {font-size:13px;color:var(--tx);background:#fff;border:1px solid #cdd4cb;border-radius:5px;padding:11px;width:100%;margin-top:7px}
-.side .btn {width:100%;margin-top:9px}
-#go {margin-top:20px;padding:14px}
-#hint {line-height:1.6!important;color:#677269!important}
-.ctl {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 20px;align-items:end;background:#fff;border:1px solid var(--ln);padding:18px 22px;margin:28px 0 20px;border-radius:7px}
-.ctl label {margin:5px 0}.ctl .btn {margin-bottom:0;min-height:43px}
-#pre .btn {padding:8px 12px;font-size:12px}
-table {width:100%;border-collapse:collapse;background:#fff;font-size:14px}
-th,td {padding:14px 17px;text-align:left;border-bottom:1px solid var(--ln)}
-th {color:var(--mu);font-size:12px;font-weight:700;background:#f0f1ec}
-td:not(:first-child) {font-variant-numeric:tabular-nums}
-details {border:1px solid var(--ln);border-radius:6px;background:#fff;margin:10px 0;overflow:hidden}
-summary {padding:16px 20px;cursor:pointer;display:flex;flex-wrap:wrap;gap:7px 19px;align-items:center;font-size:14px}
-summary:hover {background:#f5f6f1}
-details[open] summary {border-bottom:1px solid var(--ln)}
-details>p,details>div {padding:17px 20px;margin:0;line-height:1.75}
-.bt {display:grid;grid-template-columns:140px 1fr 145px;gap:15px;align-items:center;margin:14px 0;font-size:13px}
-.bar2 {height:11px;background:#edf0ea;border-radius:2px;overflow:hidden}
-.bar2 div {height:100%;transition:width .4s}
-.f {background:#fff;border:1px solid var(--ln);border-left:3px solid var(--forest);border-radius:3px;padding:18px 20px;margin:10px 0;font-size:17px;font-family:Georgia,'Times New Roman',serif}
-#t-auswertung .card {margin:25px 0 38px}
-#t-physik .pg>p {max-width:780px;line-height:1.85}
-#t-vergleich .pg>p,#t-auswertung .pg>p,#t-daten .pg>p {max-width:770px;line-height:1.8}
-@media(max-width:1100px) {.bar{gap:12px;padding:0 24px}nav{gap:13px}nav a{font-size:11px}.ro b{font-size:16px}}
-@media(max-width:800px) {
- .bar{padding:15px 20px;align-items:flex-start;gap:10px}.brand{padding-top:2px}nav{width:100%;gap:16px;overflow-x:auto;flex-wrap:nowrap}nav a{white-space:nowrap;padding:7px 0 9px}
- .pg{padding:36px 20px 65px}h1{font-size:39px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
- #t-start ol{grid-template-columns:1fr;gap:8px}#t-start ol li{padding:16px}#t-start ol li::before{margin-bottom:5px}
- #t-sim.on{display:block;height:auto}.side{border-right:0;border-bottom:1px solid var(--ln);padding:22px 20px}#pls{grid-template-columns:repeat(4,minmax(0,1fr))}
- .main .cw{flex:none;height:60vh;min-height:320px}#t-sim.fs{overflow:auto}
- .ro{grid-template-columns:repeat(3,minmax(0,1fr))}.ro>div{border-bottom:1px solid var(--ln)}
- .ctl{grid-template-columns:repeat(2,minmax(0,1fr));padding:15px}.bt{grid-template-columns:85px 1fr 100px;gap:9px;font-size:11px}
-}
-@media(max-width:480px) {#pls{grid-template-columns:repeat(2,1fr)}.ro{grid-template-columns:repeat(2,minmax(0,1fr))}.ctl{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}.grid .pl{min-height:65px;padding:12px 9px}.grid .pl small{font-size:10px}}
-@media(prefers-reduced-motion:reduce) {*,*::before,*::after{transition:none!important}}
-</style></head><body>
-<header class="bar"><span class="brand">GRAVITY / LAB</span><nav id="nav"></nav></header>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #f4f4f4;
+    color: #222;
+    line-height: 1.5;
+  }
+  h1 { color: #1a3d6d; }
+  h2 {
+    color: #1a3d6d;
+    border-bottom: 2px solid #1a3d6d;
+    padding-bottom: 5px;
+    margin-top: 40px;
+  }
+  .box {
+    background: white;
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+  canvas {
+    width: 100%;
+    border: 1px solid #333;
+    display: block;
+  }
+  button {
+    background: #1a3d6d;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  button:hover { background: #2a5a9d; }
+  label { display: inline-block; margin: 5px 20px 5px 0; }
+  select { padding: 3px; font-size: 14px; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    background: white;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    text-align: left;
+  }
+  th { background: #dde6f2; }
+  .formel {
+    font-family: 'Times New Roman', serif;
+    font-size: 20px;
+    background: white;
+    padding: 10px;
+    border-left: 4px solid #1a3d6d;
+    margin: 10px 0;
+  }
+  .hinweis { color: #666; font-size: 14px; }
+</style>
+</head>
+<body>
 
-<section class="tab" id="t-start"><div class="pg">
-<h1>Wie hoch springst du im Sonnensystem?</h1>
-<p class="mu" style="font-size:17px;max-width:62ch">Wie beeinflusst die Schwerkraft die Sprunghöhe und Flugbahn eines Menschen auf verschiedenen Himmelskörpern? Lass einen Astronauten springen und beobachte die Unterschiede selbst.</p>
-<div class="row2"><button class="btn r" data-t="sim">Simulator starten</button><button class="btn g" data-t="vergleich">Zwei Himmelskörper vergleichen</button></div>
-<div class="card" id="fact" style="max-width:62ch"></div>
-<h3>So funktioniert es</h3>
-<ol style="margin:0 0 20px;padding-left:20px"><li>Im Simulator einen Himmelskörper wählen.</li><li>Absprunggeschwindigkeit und Winkel einstellen.</li><li>Auf „Springen“ klicken und die Flugbahn beobachten. Frühere Sprünge bleiben als farbige Linien im Hintergrund sichtbar.</li></ol>
-<h3>Direkt losspringen</h3><div class="grid" id="sp"></div>
-<p class="mu" style="margin-top:28px;font-size:13px">Physik-Abschlussprojekt, Klasse 10. Interaktive Simulation und Auswertung.</p></div></section>
+<h1>Wie hoch springt man im Sonnensystem?</h1>
+<p>
+  In diesem Projekt untersuche ich, wie die Schwerkraft die Sprunghöhe und die Flugbahn
+  eines Menschen auf verschiedenen Himmelskörpern beeinflusst. Dafür habe ich einen kleinen
+  Simulator programmiert, in dem ein Astronaut auf verschiedenen Planeten springen kann.
+</p>
 
-<section class="tab" id="t-sim">
-<div class="side"><h3>Himmelskörper</h3><div id="pls"></div>
-<h3>Sprung einstellen</h3>
-<label>Absprunggeschwindigkeit v₀: <b class="vo"></b><input type="range" data-k="v" min="0.5" max="8" step="0.1"></label>
-<label>Absprungwinkel: <b class="ao"></b><input type="range" data-k="a" min="20" max="90" step="1"></label>
-<label>Abspielgeschwindigkeit<select data-k="sl"><option value="1">Echtzeit</option><option value="0.5">Zeitlupe ½×</option><option value="0.1">Zeitlupe 0,1×</option><option value="0.02">Zeitlupe 0,02×</option></select></label>
-<p class="mu" id="hint" style="font-size:13px;margin:0"></p>
-<button class="btn r" id="go">Springen (Leertaste)</button>
-<label style="margin-top:14px;display:flex;gap:8px"><input type="checkbox" id="kp" checked> Frühere Sprünge im Hintergrund zeigen</label>
-<button class="btn g" id="clr">Spuren löschen</button><button class="btn g" id="inf">Infos zum Himmelskörper</button><button class="btn g" id="fs">Vollbild</button></div>
-<div class="main"><div class="cw"><canvas id="c1" aria-label="Sprungsimulation"></canvas><div id="info" hidden></div></div>
-<div class="ro"><div><span>Gravitation g</span><b id="rg"></b></div><div><span>im Vergleich zur Erde</span><b id="rp"></b></div><div><span>Sprunghöhe h</span><b id="rh"></b></div><div><span>Flugdauer t</span><b id="rt"></b></div><div id="rwb"><span>Sprungweite</span><b id="rw"></b></div></div></div></section>
+<!-- ===================== SIMULATOR ===================== -->
+<h2>1. Simulator</h2>
+<div class="box">
+  <label>Himmelskörper:
+    <select id="planetAuswahl"></select>
+  </label>
+  <label>Geschwindigkeit v₀: <b id="vText"></b><br>
+    <input type="range" id="vRegler" min="0.5" max="8" step="0.1" value="3">
+  </label>
+  <label>Winkel: <b id="wText"></b><br>
+    <input type="range" id="wRegler" min="20" max="90" step="1" value="90">
+  </label>
+  <label>Abspielgeschwindigkeit:
+    <select id="zeitlupe">
+      <option value="1">Echtzeit</option>
+      <option value="0.5">Zeitlupe 0,5x</option>
+      <option value="0.1">Zeitlupe 0,1x</option>
+      <option value="0.02">Zeitlupe 0,02x</option>
+    </select>
+  </label>
+  <br>
+  <label><input type="checkbox" id="alteZeigen" checked> Alte Sprünge anzeigen</label>
+  <button id="springen">Springen!</button>
+  <button id="loeschen">Spuren löschen</button>
+</div>
 
-<section class="tab" id="t-vergleich"><div class="pg"><h2>Vergleich</h2>
-<p class="mu">Zwei Astronauten springen gleichzeitig mit denselben Einstellungen. Der Maßstab ist für beide gleich, die Skala links zeigt Meter.</p>
-<div class="ctl"><label>Links<select id="sa"></select></label><label>Rechts<select id="sb"></select></label>
-<label>v₀: <b class="vo"></b><input type="range" data-k="v" min="0.5" max="8" step="0.1"></label>
-<label>Winkel: <b class="ao"></b><input type="range" data-k="a" min="20" max="90" step="1"></label>
-<label>Abspielgeschwindigkeit<select data-k="sl"><option value="1">Echtzeit</option><option value="0.5">Zeitlupe ½×</option><option value="0.1">Zeitlupe 0,1×</option><option value="0.02">Zeitlupe 0,02×</option></select></label>
-<button class="btn r" id="g2">Beide springen</button></div>
-<div class="row2" id="pre" style="margin-top:0"></div>
-<div class="cw h"><canvas id="c2" aria-label="Vergleich zweier Sprünge"></canvas></div>
-<table style="margin-top:14px"><thead><tr><th></th><th id="ta"></th><th id="tb"></th><th>Faktor rechts/links</th></tr></thead><tbody id="tbody"></tbody></table>
-<p id="cmpTxt" style="margin-top:12px"></p></div></section>
+<canvas id="simCanvas" width="800" height="400"></canvas>
 
-<section class="tab" id="t-auswertung"><div class="pg"><h2>Auswertung</h2>
-<p class="mu">Sprunghöhe und Flugdauer aller Himmelskörper bei v₀ = <b class="vo"></b> und senkrechtem Sprung. Die Geschwindigkeit stellst du im Simulator oder im Vergleich ein.</p>
-<div class="card"><div class="row2" style="margin-top:0"><button class="btn g" id="lin">Linear</button><button class="btn g" id="log">Logarithmisch</button><span class="mu" style="align-self:center;font-size:13px">Gestreift: theoretischer Vergleich ohne feste Oberfläche</span></div><div id="chart"></div></div>
-<h3>Antworten auf die Leitfragen</h3><div id="qa"></div></div></section>
+<div class="box">
+  <p id="simErgebnis"></p>
+  <p id="planetInfo" class="hinweis"></p>
+</div>
 
-<section class="tab" id="t-physik"><div class="pg"><h2>Die Physik dahinter</h2>
-<p>Beim Absprung hat der Astronaut die Geschwindigkeit v₀. Die Schwerkraft bremst ihn mit der Beschleunigung g ab, bis er am höchsten Punkt kurz stillsteht und wieder zurückfällt.</p>
-<div class="f">h = v₀² / (2·g)   Maximale Sprunghöhe</div><div class="f">t = 2·v₀ / g   Gesamte Flugzeit</div><div class="f">Weite = v₀² · sin(2α) / g   Schräger Sprung mit Winkel α</div>
-<p class="mu" style="font-size:14px">Beim schrägen Sprung gilt für h und t die senkrechte Komponente v₀·sin α statt v₀.</p>
-<h3>Was die Formeln zeigen</h3><p>Höhe und Flugzeit sind umgekehrt proportional zu g: Halbe Schwerkraft bedeutet doppelte Höhe und doppelte Flugzeit. Die Schwerkraft eines Körpers folgt aus g = G·M / r² mit Masse M und Radius r.</p>
-<h3>Annahmen</h3><p>Die Simulation rechnet ohne Luftwiderstand. So lässt sich der Einfluss der Schwerkraft sauber von anderen Effekten trennen. Außerdem gilt: konstante Schwerkraft während des Sprungs und gleiche Muskelkraft auf allen Himmelskörpern, deshalb dieselbe Absprunggeschwindigkeit. Der Standardwert 3 m/s entspricht auf der Erde etwa 0,46 m, also einem normalen Standsprung.</p>
-<p>Jupiter und die Sonne haben keine feste Oberfläche. Ihre Werte gelten am Bezugsniveau (1 bar bzw. Photosphäre) und sind nur theoretische Vergleiche. Quelle der g-Werte: NASA Planetary Fact Sheets.</p></div></section>
+<!-- ===================== VERGLEICH ===================== -->
+<h2>2. Vergleich von zwei Himmelskörpern</h2>
+<p>Beide Astronauten springen mit derselben Geschwindigkeit und demselben Winkel wie oben eingestellt.
+  Der Maßstab ist für beide gleich.</p>
+<div class="box">
+  <label>Links: <select id="vergleichA"></select></label>
+  <label>Rechts: <select id="vergleichB"></select></label>
+  <button id="beideSpringen">Beide springen</button>
+</div>
 
-<section class="tab" id="t-daten"><div class="pg"><h2>Himmelskörper</h2><p class="mu">Klicke auf einen Eintrag für die Erklärung, warum die Schwerkraft dort so ist.</p><div id="dl"></div></div></section>
+<canvas id="vergleichCanvas" width="800" height="350"></canvas>
+
+<table style="margin-top: 10px;">
+  <thead>
+    <tr><th></th><th id="nameA"></th><th id="nameB"></th></tr>
+  </thead>
+  <tbody id="vergleichTabelle"></tbody>
+</table>
+<p id="vergleichText"></p>
+
+<!-- ===================== TABELLE ===================== -->
+<h2>3. Alle Himmelskörper im Überblick</h2>
+<p>Senkrechter Sprung mit v₀ = <span class="vAnzeige"></span>.</p>
+<table>
+  <thead>
+    <tr><th>Himmelskörper</th><th>g in m/s²</th><th>im Vergleich zur Erde</th><th>Sprunghöhe</th><th>Flugzeit</th></tr>
+  </thead>
+  <tbody id="uebersicht"></tbody>
+</table>
+<p class="hinweis">* Jupiter und die Sonne haben keine feste Oberfläche. Das ist nur ein theoretischer Vergleich.</p>
+
+<!-- ===================== PHYSIK ===================== -->
+<h2>4. Die Physik dahinter</h2>
+<p>
+  Beim Absprung hat der Astronaut die Geschwindigkeit v₀. Die Schwerkraft bremst ihn mit der
+  Beschleunigung g ab, bis er am höchsten Punkt kurz stehen bleibt und wieder runterfällt.
+</p>
+<div class="formel">h = v₀² / (2 · g)</div>
+<div class="formel">t = 2 · v₀ / g</div>
+<div class="formel">Weite = v₀² · sin(2α) / g</div>
+<p>
+  Beim schrägen Sprung nimmt man für h und t nur den senkrechten Teil der Geschwindigkeit, also v₀ · sin(α).
+</p>
+<p>
+  Man sieht an den Formeln, dass h und t umgekehrt proportional zu g sind. Wenn die Schwerkraft
+  halb so groß ist, springt man doppelt so hoch und ist doppelt so lange in der Luft.
+  Die Schwerkraft eines Planeten hängt von seiner Masse M und seinem Radius r ab: g = G · M / r².
+</p>
+
+<h3>Annahmen</h3>
+<ul>
+  <li>Kein Luftwiderstand</li>
+  <li>Die Schwerkraft bleibt während des Sprungs gleich</li>
+  <li>Der Astronaut hat überall gleich viel Kraft, deshalb ist v₀ überall gleich</li>
+  <li>3 m/s entspricht auf der Erde ungefähr einem normalen Sprung aus dem Stand (ca. 0,46 m)</li>
+</ul>
+
+<!-- ===================== ERGEBNIS ===================== -->
+<h2>5. Ergebnis</h2>
+<p>
+  Bei v₀ = 3 m/s springt man auf der Erde ca. 0,46 m hoch. Auf dem Mond sind es schon 2,78 m und
+  auf Pluto sogar 7,26 m, weil Pluto die schwächste Schwerkraft hat. Dort ist man auch am längsten
+  in der Luft (9,68 s statt 0,61 s auf der Erde).
+</p>
+<p>
+  Die stärkste Schwerkraft hat die Sonne mit 274 m/s². Da würde man nur 1,6 cm hoch kommen.
+  Von den Himmelskörpern mit fester Oberfläche hat die Erde die stärkste Schwerkraft.
+</p>
+<p>
+  Obwohl die Absprunggeschwindigkeit immer gleich ist, sind die Sprünge also total unterschiedlich.
+  Das zeigt, dass die Gravitation direkt bestimmt, wie hoch und wie lange man springt.
+</p>
+
+<h2>Quellen</h2>
+<ul>
+  <li>NASA Planetary Fact Sheets (Werte für g)</li>
+</ul>
 
 <script>
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],G0=9.81,FN='"Segoe UI",Roboto,Arial,sans-serif';
-const f=(x,d=2)=>x.toLocaleString('de-DE',{minimumFractionDigits:x<.1?3:d,maximumFractionDigits:x<.1?3:d});
-const B=[
-{n:'Erde',ty:'Gesteinsplanet',g:9.81,c:['#0a1a3f','#6fb4f0'],gr:'#3f7a45',cel:['#fff3c4',20],at:1,t:'Unser Vergleichsmaßstab: 5,97·10²⁴ kg Masse und 6371 km Radius ergeben g ≈ 9,81 m/s².'},
-{n:'Mond',ty:'Mond der Erde',g:1.62,c:['#000','#05070d'],gr:'#8d8d92',cel:['#3d7fd1',34],t:'Nur 1,2 % der Erdmasse und ein Viertel des Radius: zusammen etwa ein Sechstel der Erdschwerkraft.'},
-{n:'Mars',ty:'Gesteinsplanet',g:3.71,c:['#2a1510','#c98a63'],gr:'#a8512f',cel:['#ffe2c2',10],at:1,t:'Rund 11 % der Erdmasse bei halbem Radius: Die Schwerkraft beträgt gut ein Drittel der irdischen.'},
-{n:'Venus',ty:'Gesteinsplanet',g:8.87,c:['#5a3a10','#e8b45a'],gr:'#7a5a33',cel:['#000',0],at:1,t:'Fast so groß und schwer wie die Erde, daher 90 % der Schwerkraft. Mit rund 460 °C und etwa 90 bar Druck ist die Oberfläche trotzdem lebensfeindlich.'},
-{n:'Jupiter',ty:'Gasriese',g:24.79,c:['#3b2418','#d9b38c'],gr:'#b98a5c',m:4,cel:['#fff4d6',6],th:1,at:1,fe:'rgba(255,255,255,.18)',t:'Keine feste Oberfläche. Mit 318 Erdmassen ist Jupiter extrem schwer, doch der riesige Radius (11 Erdradien) senkt g am 1-bar-Niveau auf das 2,5-Fache der Erde.'},
-{n:'Merkur',ty:'Gesteinsplanet',g:3.70,c:['#000','#0a0a0e'],gr:'#7b6f66',cel:['#fff1c9',46],t:'Merkur hat 5,5 % der Erdmasse und 38 % des Erdradius. Daraus ergeben sich 38 % der Erdgravitation, fast wie beim Mars.'},
-{n:'Pluto',ty:'Zwergplanet',g:0.62,c:['#02030a','#1a1d33'],gr:'#b99f8a',cel:['#c9c2ba',24],fe:'rgba(120,60,50,.3)',t:'Der Zwergplanet hat nur 0,2 % der Erdmasse und 19 % des Erdradius: Die Schwerkraft liegt bei etwa 6 % der irdischen.'},
-{n:'Sonne',ty:'Stern',g:274,c:['#ff7a18','#ffd23f'],gr:'#ff9d1c',m:3,cel:['#fff',0],th:1,at:1,fe:'rgba(255,245,170,.45)',t:'Reiner Gedankenversuch: Wegen der enormen Masse (333 000 Erdmassen) wirkt an der Photosphäre das 28-Fache der Erdschwerkraft.'}];
-const COL=['#4da3ff','#e0e0e6','#ff7a45','#ffd166','#f2b880','#b8a99a','#e7b8d0','#ffffff'];
-B.forEach((b,i)=>b.i=i);
-const calc=(b,v,a)=>{const r=a*Math.PI/180,vy=v*Math.sin(r),vx=v*Math.cos(r);return{vx,vy,h:vy*vy/(2*b.g),T:2*vy/b.g,R:vx*2*vy/b.g}};
-const S={i:0,v:3,a:90,sl:1,A:0,B:1,log:0,keep:1};
-let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
-const ST=Array.from({length:70},()=>[rnd(),rnd(),.3+rnd()*.7,rnd()<.15?2:1]);
-const FE=Array.from({length:16},()=>[rnd(),rnd(),rnd()]);
-function rr(x,a,b,w,h,r,c){x.fillStyle=c;x.beginPath();x.roundRect(a,b,w,h,r);x.fill()}
-function astro(x,px,py,s,air){x.save();x.translate(px,py);const k=s/110;x.scale(k,k);x.lineCap='round';
- const W='#f1f4fb',sp=air?14:5,ay=air?-96:-50;
- rr(x,-36,-84,20,42,7,'#9aa4bd');
- x.strokeStyle=W;x.lineWidth=14;x.beginPath();x.moveTo(-7,-40);x.lineTo(-7-sp,-8);x.moveTo(7,-40);x.lineTo(7+sp,-8);x.stroke();
- x.strokeStyle='#ff9f43';x.lineWidth=15;x.beginPath();x.moveTo(-7-sp,-6);x.lineTo(-9-sp,-3);x.moveTo(7+sp,-6);x.lineTo(9+sp,-3);x.stroke();
- rr(x,-19,-84,38,48,12,W);rr(x,-7,-70,14,9,3,'#ff9f43');
- x.strokeStyle=W;x.lineWidth=11;x.beginPath();x.moveTo(-17,-74);x.lineTo(-30,ay);x.moveTo(17,-74);x.lineTo(30,ay);x.stroke();
- x.fillStyle=W;x.beginPath();x.arc(0,-96,16,0,7);x.fill();
- const g=x.createLinearGradient(-6,-104,12,-88);g.addColorStop(0,'#5fb8ff');g.addColorStop(1,'#0b1a45');x.fillStyle=g;x.beginPath();x.ellipse(4,-96,11,8.5,0,0,7);x.fill();
- x.fillStyle='rgba(255,255,255,.7)';x.beginPath();x.ellipse(0,-99,3,1.8,-.5,0,7);x.fill();x.restore()}
-const same=(u,w)=>u.b===w.b&&u.v===w.v&&u.a===w.a;
-class Scene{
- constructor(cv,get){this.cv=cv;this.x=cv.getContext('2d');this.get=get;this.sc=40;this.t0=null;this.gh=[];this.cur=null;this.resize();new ResizeObserver(()=>this.resize()).observe(cv)}
- resize(){const r=this.cv.getBoundingClientRect(),d=devicePixelRatio||1;this.d=d;this.W=r.width;this.H=r.height;this.cv.width=r.width*d;this.cv.height=r.height*d}
- jump(){const p=this.get(),s={b:p.bs[0],v:p.v,a:p.a};
-  if(p.keep){if(this.cur&&!same(this.cur,s))this.gh.push(this.cur);this.gh=this.gh.filter(g=>!same(g,s));this.gh=this.gh.filter((g,k,a)=>a.findIndex(h=>same(h,g))==k).slice(-4)}
-  this.cur=s;this.t0=performance.now()}
- frame(now){const{x,W,H}=this;if(!W)return;const p=this.get(),n=p.bs.length,pw=W/n,gy=H-64;
-  const t=this.t0==null?null:(now-this.t0)/1000*p.sl,cs=p.bs.map(b=>calc(b,p.v,p.a));
-  const all=p.bs.map(b=>[b,p.v,p.a]);if(p.keep&&n==1)this.gh.forEach(g=>all.push([g.b,g.v,g.a]));
-  let tg=42;all.forEach(([b,v,a])=>{const c=calc(b,v,a);tg=Math.min(tg,(gy-50)/(c.h+1.9),c.R>.01?(pw-110)/c.R:1e9)});
-  this.sc+=(Math.max(tg,.4)-this.sc)*.15;
-  x.setTransform(this.d,0,0,this.d,0,0);x.clearRect(0,0,W,H);
-  p.bs.forEach((b,i)=>this.panel(b,cs[i],i*pw,pw,gy,t,i,p))}
- panel(b,c,x0,w,gy,t,i,p){const x=this.x,H=this.H,sc=this.sc,one=p.bs.length==1,col=one?'#fff':i?'#5ec8ff':'#ffe14d';
-  x.save();x.beginPath();x.rect(x0,0,w,H);x.clip();
-  let g=x.createLinearGradient(0,0,0,gy);g.addColorStop(0,b.c[0]);g.addColorStop(1,b.c[1]);x.fillStyle=g;x.fillRect(x0,0,w,H);
-  x.fillStyle='#fff';ST.forEach(s=>{x.globalAlpha=s[2]*(b.at?.25:1);x.fillRect(x0+s[0]*w,s[1]*gy,s[3],s[3])});x.globalAlpha=1;
-  if(b.cel[1]){x.shadowColor=b.cel[0];x.shadowBlur=28;x.fillStyle=b.cel[0];x.beginPath();x.arc(x0+w*.8,gy*.3,b.cel[1],0,7);x.fill();x.shadowBlur=0}
-  g=x.createLinearGradient(0,gy,0,H);g.addColorStop(0,b.gr);g.addColorStop(1,'#000');x.fillStyle=g;x.fillRect(x0,gy,w,H-gy);
-  x.fillStyle=b.fe||'rgba(0,0,0,.22)';FE.forEach(e=>{x.beginPath();x.ellipse(x0+e[0]*w,gy+10+e[1]*(H-gy-18),(8+e[2]*26)*(b.m||1),2+e[2]*5,0,0,7);x.fill()});
-  x.strokeStyle='rgba(255,255,255,.3)';x.lineWidth=1;x.beginPath();x.moveTo(x0,gy);x.lineTo(x0+w,gy);x.stroke();
-  const st=[.1,.2,.5,1,2,5,10,20,50,100,200].find(s=>s*sc>=34)||500;
-  x.font='11px '+FN;x.fillStyle='rgba(255,255,255,.6)';x.strokeStyle='rgba(255,255,255,.1)';
-  for(let m=st;gy-m*sc>80;m+=st){const y=gy-m*sc;x.beginPath();x.moveTo(x0+36,y);x.lineTo(x0+w,y);x.stroke();x.fillText(f(m,m<1?1:0)+' m',x0+4,y+4)}
-  const sx=p.a<90?x0+70:x0+44+(w-70)/2,PF=(c,b)=>u=>[sx+c.vx*u*sc,gy-(c.vy*u-b.g*u*u/2)*sc],P=PF(c,b),N=60;
-  const path=(Q,e)=>{x.beginPath();for(let k=0;k<=N;k++){const q=Q(e*k/N);k?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1])}x.stroke()};
-  if(one&&p.keep)this.gh.forEach(h=>{if(same(h,{b,v:p.v,a:p.a}))return;const d=calc(h.b,h.v,h.a),k2=COL[h.b.i];
-   x.strokeStyle=k2;x.lineWidth=2.5;x.globalAlpha=.75;path(PF(d,h.b),d.T);x.globalAlpha=1;
-   x.fillStyle=k2;x.font='600 11px '+FN;x.fillText(h.b.n+': '+f(d.h)+' m',sx+d.vx*d.T*sc/2+8,Math.max(gy-d.h*sc-5,70))});
-  x.strokeStyle=col;x.lineWidth=2;x.setLineDash([5,6]);x.globalAlpha=.6;path(P,c.T);x.setLineDash([]);x.globalAlpha=1;
-  const ay=gy-c.h*sc;x.lineWidth=1;x.setLineDash([2,4]);x.globalAlpha=.5;x.beginPath();x.moveTo(x0+36,ay);x.lineTo(x0+w,ay);x.stroke();x.setLineDash([]);x.globalAlpha=1;
-  x.fillStyle=col;x.font='600 12px '+FN;x.fillText('h = '+f(c.h)+' m',sx+c.vx*c.T*sc/2+10,Math.max(ay-6,70));
-  const u=t==null?0:Math.min(t,c.T);
-  if(t!=null){x.lineWidth=3.5;path(P,u)}
-  const q=P(u);astro(x,q[0],q[1],Math.max(1.8*sc,16),t!=null&&t<c.T);
-  x.fillStyle='#fff';x.font='600 15px '+FN;x.fillText(b.n+(b.th?' (theoretisch)':''),x0+44,26);
-  x.fillStyle=col;x.font='12px '+FN;x.fillText('g = '+f(b.g)+' m/s²',x0+44,44);
-  if(t!=null)x.fillText('t = '+f(u)+' s, Höhe '+f(Math.max(gy-q[1],0)/sc)+' m',x0+44,62);
-  if(i){x.strokeStyle='rgba(255,255,255,.35)';x.beginPath();x.moveTo(x0,0);x.lineTo(x0,H);x.stroke()}
-  x.restore()}}
-const sim=new Scene($('#c1'),()=>({...S,bs:[B[S.i]]})),cmp=new Scene($('#c2'),()=>({...S,bs:[B[S.A],B[S.B]],keep:0}));
-const scenes=[sim,cmp],loop=n=>{scenes.forEach(s=>s.frame(n));requestAnimationFrame(loop)};
+// ------------------------------------------------------------
+// Daten der Himmelskörper
+// ------------------------------------------------------------
+const planeten = [
+  { name: 'Erde',    g: 9.81,  himmel: '#4a86c5', boden: '#3f7a45',
+    text: 'Die Erde ist unser Vergleich. Masse 5,97·10²⁴ kg und Radius 6371 km ergeben g = 9,81 m/s².' },
+  { name: 'Mond',    g: 1.62,  himmel: '#000000', boden: '#888888',
+    text: 'Der Mond hat nur 1,2 % der Erdmasse und ein Viertel des Radius. Deshalb hat er nur ca. ein Sechstel der Erdschwerkraft.' },
+  { name: 'Mars',    g: 3.71,  himmel: '#9a5a3a', boden: '#a8512f',
+    text: 'Mars hat ca. 11 % der Erdmasse und den halben Radius. Die Schwerkraft ist etwas mehr als ein Drittel von der Erde.' },
+  { name: 'Venus',   g: 8.87,  himmel: '#a87428', boden: '#7a5a33',
+    text: 'Venus ist fast so groß und schwer wie die Erde, deshalb hat sie 90 % der Erdschwerkraft. Es ist dort aber 460 °C heiß.' },
+  { name: 'Merkur',  g: 3.70,  himmel: '#000000', boden: '#7b6f66',
+    text: 'Merkur hat 5,5 % der Erdmasse und 38 % des Erdradius. Die Schwerkraft ist fast gleich wie auf dem Mars.' },
+  { name: 'Jupiter', g: 24.79, himmel: '#8a6a4a', boden: '#b98a5c', theoretisch: true,
+    text: 'Jupiter ist ein Gasriese ohne feste Oberfläche. Er ist 318-mal so schwer wie die Erde, aber auch viel größer, deshalb ist g "nur" 2,5-mal so groß.' },
+  { name: 'Pluto',   g: 0.62,  himmel: '#111122', boden: '#b99f8a',
+    text: 'Pluto ist ein Zwergplanet mit 0,2 % der Erdmasse. Die Schwerkraft ist nur ca. 6 % von der Erde.' },
+  { name: 'Sonne',   g: 274,   himmel: '#c85a00', boden: '#ff9d1c', theoretisch: true,
+    text: 'Nur ein Gedankenexperiment! Die Sonne ist 333 000-mal so schwer wie die Erde, die Schwerkraft ist 28-mal so stark.' }
+];
 
-const TABS=[['start','Start'],['sim','Simulator'],['vergleich','Vergleich'],['auswertung','Auswertung'],['physik','Physik'],['daten','Himmelskörper']];
-$('#nav').innerHTML=TABS.map(t=>`<a href="#${t[0]}" data-t="${t[0]}">${t[1]}</a>`).join('');
-let CUR='start';
-const rd=()=>{let h='';try{h=location.hash.slice(1)}catch(e){}return TABS.some(t=>t[0]==h)?h:'start'};
-function show(h){CUR=h;$$('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+h));
- $$('#nav a').forEach(a=>{const on=a.dataset.t==h;a.classList.toggle('on',on);on?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current')});
- if(h!='sim'){$('#t-sim').classList.remove('fs');fsl()}window.scrollTo(0,0)}
-function go(h){show(h);try{if(location.hash!=='#'+h)history.pushState(null,'','#'+h)}catch(e){}}
-addEventListener('hashchange',()=>show(rd()));addEventListener('popstate',()=>show(rd()));
+const spurFarben = ['#ffd166', '#ff6b6b', '#7ee081', '#ff9ff3'];
 
-function upd(){
- const b=B[S.i],c=calc(b,S.v,S.a),p=b.g/G0*100;
- $$('[data-k]').forEach(e=>e.value=S[e.dataset.k]);$$('.vo').forEach(e=>e.textContent=f(S.v,1)+' m/s');$$('.ao').forEach(e=>e.textContent=S.a+'°');
- $('#pls').innerHTML=B.map(q=>`<button class="pl ${q.i==S.i?'on':''}" data-i="${q.i}"><i style="background:${COL[q.i]}"></i>${q.n}<small>${f(q.g)}</small></button>`).join('');
- $('#info').innerHTML=`<b style="font-size:17px">${b.n}</b> <span class="mu">${b.ty}</span><p style="margin:6px 0 0">${b.t}</p>${b.th?`<div class="warn">Theoretischer Vergleich: ${b.n} hat keine feste Oberfläche, auf der ein Mensch stehen könnte.</div>`:''}`;
- $('#rg').textContent=f(b.g)+' m/s²';$('#rp').textContent=f(p,p<10?1:0)+' %';$('#rh').textContent=f(c.h)+' m';$('#rt').textContent=f(c.T)+' s';$('#rw').textContent=f(c.R)+' m';$('#rwb').style.display=S.a<90?'':'none';
- $('#hint').textContent=(c.T<.4&&S.sl==1)?`Dieser Sprung dauert nur ${f(c.T)} s. Wähle eine Zeitlupe.`:'Alle Himmelskörper nutzen dieselbe Absprunggeschwindigkeit. 90° ist ein senkrechter Sprung.';
- const hs=[0,1,6].map(k=>f(calc(B[k],S.v,90).h));
- $('#fact').innerHTML=`Mit v₀ = ${f(S.v,1)} m/s springst du auf der Erde <b>${hs[0]} m</b> hoch, auf dem Mond <b>${hs[1]} m</b> und auf Pluto <b>${hs[2]} m</b>.`;
- const A=B[S.A],Bb=B[S.B],ca=calc(A,S.v,S.a),cb=calc(Bb,S.v,S.a);
- $('#ta').textContent=A.n;$('#tb').textContent=Bb.n;
- const rows=[['Gravitation g',A.g,Bb.g,' m/s²'],['Sprunghöhe',ca.h,cb.h,' m'],['Flugdauer',ca.T,cb.T,' s']];if(S.a<90)rows.push(['Sprungweite',ca.R,cb.R,' m']);
- $('#tbody').innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td>${f(r[1])}${r[3]}</td><td>${f(r[2])}${r[3]}</td><td>×${f(r[2]/r[1])}</td></tr>`).join('');
- const k=A.g/Bb.g;$('#cmpTxt').textContent=A===Bb?'Wähle zwei verschiedene Himmelskörper.':`Auf ${Bb.n} ist die Schwerkraft ${f(k>1?k:1/k)}-mal ${k>1?'schwächer':'stärker'} als auf ${A.n}. Deshalb springst du dort ${f(k)}-mal so hoch und bleibst ${f(k)}-mal so lange in der Luft.`;
- const L=B.map(q=>({b:q,...calc(q,S.v,90)})).sort((x,y)=>y.h-x.h),mx=L[0].h,mn=L[L.length-1].h;
- const wd=h=>S.log?5+95*Math.log(h/mn)/Math.log(mx/mn):Math.max(h/mx*100,.8);
- $('#chart').innerHTML=L.map(r=>{const c0=COL[r.b.i];return `<div class="bt"><span>${r.b.n}${r.b.th?' (theor.)':''}</span><div class="bar2"><div style="width:${wd(r.h)}%;background:${r.b.th?`repeating-linear-gradient(45deg,${c0},${c0} 5px,#0b1020 5px,#0b1020 9px)`:c0}"></div></div><span>${f(r.h)} m, ${f(r.T)} s</span></div>`}).join('');
- $('#lin').style.borderColor=S.log?'':'#2f6fed';$('#log').style.borderColor=S.log?'#2f6fed':'';
- const ce=calc(B[0],S.v,90),T=[...L].sort((x,y)=>y.T-x.T)[0],st=B.filter(q=>!q.th).reduce((m,q)=>q.g>m.g?q:m),sg=B.reduce((m,q)=>q.g>m.g?q:m);
- const open=$$('#qa details').map(d=>d.open);
- $('#qa').innerHTML=[['Wo springt man am höchsten?',`Auf ${L[0].b.n}: ${f(L[0].h)} m, also ${f(L[0].h/ce.h,1)}-mal so hoch wie auf der Erde (${f(ce.h)} m). ${L[0].b.n} hat die schwächste Schwerkraft.`],
- ['Wo ist die Flugzeit am längsten?',`Auf ${T.b.n}: ${f(T.T)} s statt ${f(ce.T)} s auf der Erde. Die Flugzeit ist wie die Höhe umgekehrt proportional zu g.`],
- ['Wo ist die Schwerkraft am stärksten?',`Theoretisch auf der Sonne mit ${f(sg.g,0)} m/s² (${f(sg.g/G0*100,0)} % der Erdschwerkraft). Unter den Körpern mit fester Oberfläche ist es die ${st.n} mit ${f(st.g)} m/s².`],
- ['Wie groß sind die Unterschiede zur Erde?',B.slice(1).map(q=>`${q.n}: ${f(G0/q.g)}-fache Höhe`).join(', ')+'.'],
- ['Was zeigt der Vergleich über die Gravitation?',`Die Absprunggeschwindigkeit bleibt gleich, nur g ändert sich. Trotzdem schwankt die Sprunghöhe zwischen ${f(mn)} m und ${f(mx)} m. Die Gravitation bestimmt also direkt, wie hoch und wie lange wir fliegen: h und t sind proportional zu 1/g.`]]
- .map((q,j)=>`<details${open[j]?' open':''}><summary><b>${q[0]}</b></summary><p>${q[1]}</p></details>`).join('');
- const od=$$('#dl details').map(x=>x.open);$('#dl').innerHTML=B.map(q=>{const d=calc(q,S.v,90);return `<details${od[q.i]?' open':''}><summary><i class="dot" style="background:${COL[q.i]}"></i><b>${q.n}</b><span class="mu">${q.ty}</span><span>${f(q.g)} m/s²</span><span>${f(q.g/G0*100,q.g/G0*100<10?1:0)} % der Erde</span></summary><div><p>${q.t}</p>${q.th?'<div class="warn" style="margin-bottom:10px">Theoretischer Vergleich ohne feste Oberfläche.</div>':''}<p>Bei v₀ = ${f(S.v,1)} m/s: Sprunghöhe ${f(d.h)} m, Flugdauer ${f(d.T)} s.</p><button class="btn" data-go="${q.i}">Im Simulator ausprobieren</button></div></details>`}).join('');
- $('#sp').innerHTML=B.map(q=>`<button class="pl" data-go="${q.i}"><i style="background:${COL[q.i]}"></i>${q.n}<small>${f(q.g)}</small></button>`).join('')}
-$$('[data-k]').forEach(e=>e.addEventListener('input',()=>{S[e.dataset.k]=+e.value;upd()}));
-document.addEventListener('click',e=>{
- const t=e.target.closest('[data-t]');if(t){e.preventDefault();go(t.dataset.t);return}
- const g=e.target.closest('[data-go]');if(g){S.i=+g.dataset.go;upd();go('sim');setTimeout(()=>sim.jump(),250);return}
- const q=e.target.closest('#pls .pl');if(q){S.i=+q.dataset.i;upd();sim.jump()}});
-$('#go').onclick=()=>sim.jump();$('#g2').onclick=()=>cmp.jump();
-$('#kp').onchange=e=>{S.keep=+e.target.checked};$('#clr').onclick=()=>{sim.gh=[]};
-$('#inf').onclick=()=>{$('#info').hidden=!$('#info').hidden};
-function fsl(){$('#fs').textContent=(document.fullscreenElement||$('#t-sim').classList.contains('fs'))?'Vollbild beenden':'Vollbild'}
-$('#fs').onclick=()=>{const e=$('#t-sim');if(document.fullscreenElement){document.exitFullscreen();return}
- if(e.classList.contains('fs')){e.classList.remove('fs');fsl();return}
- let r;try{r=e.requestFullscreen?e.requestFullscreen():Promise.reject()}catch(x){r=Promise.reject()}
- r.catch(()=>{e.classList.add('fs');fsl()})};
-document.addEventListener('fullscreenchange',fsl);
-$('#sa').innerHTML=$('#sb').innerHTML=B.map(q=>`<option value="${q.i}">${q.n}</option>`).join('');
-$('#sa').value=S.A;$('#sb').value=S.B;
-$('#sa').onchange=e=>{S.A=+e.target.value;upd()};$('#sb').onchange=e=>{S.B=+e.target.value;upd()};
-const PR=[[0,1],[0,2],[0,4],[1,6],[0,3]];
-$('#pre').innerHTML=PR.map((p,k)=>`<button class="btn g" data-k2="${k}">${B[p[0]].n} und ${B[p[1]].n}</button>`).join('');
-$('#pre').onclick=e=>{const k=e.target.closest('[data-k2]')?.dataset.k2;if(k!=null){[S.A,S.B]=PR[k];$('#sa').value=S.A;$('#sb').value=S.B;upd();cmp.jump()}};
-$('#lin').onclick=()=>{S.log=0;upd()};$('#log').onclick=()=>{S.log=1;upd()};
-addEventListener('keydown',e=>{
- if(e.key==='Escape'&&$('#t-sim').classList.contains('fs')){$('#t-sim').classList.remove('fs');fsl();return}
- const tg=e.target;if(e.code==='Space'&&(!/^(INPUT|SELECT|BUTTON|TEXTAREA|SUMMARY|A)$/.test(tg.tagName)||tg.type==='range')){if(CUR=='sim'){e.preventDefault();sim.jump()}else if(CUR=='vergleich'){e.preventDefault();cmp.jump()}}});
-show(rd());upd();requestAnimationFrame(loop);
-</script></body></html>
+// ------------------------------------------------------------
+// Hilfsfunktionen
+// ------------------------------------------------------------
+
+// rechnet Höhe, Flugzeit und Weite aus
+function berechne(planet, v, winkel) {
+  const rad = winkel * Math.PI / 180;
+  const vx = v * Math.cos(rad);
+  const vy = v * Math.sin(rad);
+  return {
+    vx: vx,
+    vy: vy,
+    hoehe: vy * vy / (2 * planet.g),
+    zeit: 2 * vy / planet.g,
+    weite: 2 * vx * vy / planet.g
+  };
+}
+
+// Zahl mit Komma statt Punkt (bei kleinen Zahlen 3 Nachkommastellen)
+function zahl(x) {
+  const stellen = x < 0.1 ? 3 : 2;
+  return x.toFixed(stellen).replace('.', ',');
+}
+
+// Himmel, Boden und Meter-Linien zeichnen
+function zeichneHintergrund(ctx, x0, breite, hoehe, planet, massstab) {
+  const bodenY = hoehe - 40;
+
+  ctx.fillStyle = planet.himmel;
+  ctx.fillRect(x0, 0, breite, hoehe);
+  ctx.fillStyle = planet.boden;
+  ctx.fillRect(x0, bodenY, breite, 40);
+
+  // passenden Abstand für die Meter-Linien suchen
+  const moeglich = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50];
+  let schritt = 100;
+  for (const s of moeglich) {
+    if (s * massstab >= 40) { schritt = s; break; }
+  }
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.fillStyle = 'white';
+  ctx.font = '12px Arial';
+  ctx.lineWidth = 1;
+  for (let i = 1; bodenY - i * schritt * massstab > 50; i++) {
+    const y = bodenY - i * schritt * massstab;
+    ctx.beginPath();
+    ctx.moveTo(x0 + 40, y);
+    ctx.lineTo(x0 + breite, y);
+    ctx.stroke();
+    const meter = Math.round(i * schritt * 100) / 100;
+    ctx.fillText(String(meter).replace('.', ',') + ' m', x0 + 4, y + 4);
+  }
+
+  ctx.font = 'bold 16px Arial';
+  ctx.fillText(planet.name + (planet.theoretisch ? ' (theoretisch)' : ''), x0 + 50, 25);
+  ctx.font = '13px Arial';
+  ctx.fillText('g = ' + zahl(planet.g) + ' m/s²', x0 + 50, 43);
+}
+
+// Flugbahn bis zur Zeit "bis" zeichnen
+function zeichneBahn(ctx, startX, bodenY, planet, r, bis, massstab) {
+  ctx.beginPath();
+  for (let i = 0; i <= 50; i++) {
+    const t = bis * i / 50;
+    const x = startX + r.vx * t * massstab;
+    const y = bodenY - (r.vy * t - 0.5 * planet.g * t * t) * massstab;
+    if (i == 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+// einfaches Strichmännchen, (x, y) sind die Füße
+function zeichneMaennchen(ctx, x, y) {
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(x, y - 35, 7, 0, 2 * Math.PI); // Kopf
+  ctx.moveTo(x, y - 28); ctx.lineTo(x, y - 12);       // Körper
+  ctx.moveTo(x - 10, y - 22); ctx.lineTo(x + 10, y - 22); // Arme
+  ctx.moveTo(x, y - 12); ctx.lineTo(x - 7, y);        // Bein links
+  ctx.moveTo(x, y - 12); ctx.lineTo(x + 7, y);        // Bein rechts
+  ctx.stroke();
+}
+
+// Maßstab (Pixel pro Meter) so wählen, dass alle Sprünge reinpassen
+function berechneMassstab(spruenge, breite, hoehe) {
+  let massstab = 150;
+  for (const s of spruenge) {
+    const r = berechne(s.planet, s.v, s.winkel);
+    massstab = Math.min(massstab, (hoehe - 110) / (r.hoehe + 0.3));
+    if (s.winkel < 90) massstab = Math.min(massstab, (breite - 110) / r.weite);
+  }
+  return massstab;
+}
+
+// ------------------------------------------------------------
+// Eingabefelder
+// ------------------------------------------------------------
+const planetAuswahl = document.getElementById('planetAuswahl');
+const vRegler = document.getElementById('vRegler');
+const wRegler = document.getElementById('wRegler');
+const zeitlupe = document.getElementById('zeitlupe');
+const alteZeigen = document.getElementById('alteZeigen');
+const vergleichA = document.getElementById('vergleichA');
+const vergleichB = document.getElementById('vergleichB');
+
+// Auswahllisten füllen
+for (let i = 0; i < planeten.length; i++) {
+  const option = '<option value="' + i + '">' + planeten[i].name + '</option>';
+  planetAuswahl.innerHTML += option;
+  vergleichA.innerHTML += option;
+  vergleichB.innerHTML += option;
+}
+vergleichA.value = 0; // Erde
+vergleichB.value = 1; // Mond
+
+// ------------------------------------------------------------
+// Simulator
+// ------------------------------------------------------------
+const simCanvas = document.getElementById('simCanvas');
+const simCtx = simCanvas.getContext('2d');
+let sprungStart = null;
+let letzterSprung = null;
+let alteSpruenge = [];
+
+function springen() {
+  const neu = { planet: planeten[planetAuswahl.value], v: +vRegler.value, winkel: +wRegler.value };
+
+  // vorherigen Sprung als Spur merken (max. 4)
+  if (letzterSprung && alteZeigen.checked) {
+    const gleich = letzterSprung.planet == neu.planet && letzterSprung.v == neu.v && letzterSprung.winkel == neu.winkel;
+    if (!gleich) {
+      alteSpruenge.push(letzterSprung);
+      if (alteSpruenge.length > 4) alteSpruenge.shift();
+    }
+  }
+  letzterSprung = neu;
+  sprungStart = performance.now();
+}
+
+function simulatorZeichnen() {
+  const W = simCanvas.width, H = simCanvas.height, bodenY = H - 40;
+  const planet = planeten[planetAuswahl.value];
+  const v = +vRegler.value, winkel = +wRegler.value;
+  const r = berechne(planet, v, winkel);
+
+  let spruenge = [{ planet: planet, v: v, winkel: winkel }];
+  if (alteZeigen.checked) spruenge = spruenge.concat(alteSpruenge);
+  const massstab = berechneMassstab(spruenge, W, H);
+
+  zeichneHintergrund(simCtx, 0, W, H, planet, massstab);
+
+  // alte Sprünge als farbige Linien
+  if (alteZeigen.checked) {
+    for (let i = 0; i < alteSpruenge.length; i++) {
+      const s = alteSpruenge[i];
+      const rs = berechne(s.planet, s.v, s.winkel);
+      const sx = s.winkel == 90 ? W / 2 : 60;
+      simCtx.strokeStyle = spurFarben[i];
+      simCtx.lineWidth = 2;
+      zeichneBahn(simCtx, sx, bodenY, s.planet, rs, rs.zeit, massstab);
+      simCtx.fillStyle = spurFarben[i];
+      simCtx.font = '12px Arial';
+      simCtx.fillText(s.planet.name + ': ' + zahl(rs.hoehe) + ' m', W - 150, 25 + i * 16);
+    }
+  }
+
+  const startX = winkel == 90 ? W / 2 : 60;
+
+  // ganze Flugbahn gestrichelt
+  simCtx.strokeStyle = 'rgba(255,255,255,0.5)';
+  simCtx.lineWidth = 2;
+  simCtx.setLineDash([5, 5]);
+  zeichneBahn(simCtx, startX, bodenY, planet, r, r.zeit, massstab);
+  simCtx.setLineDash([]);
+
+  // aktuelle Zeit im Sprung
+  let t = 0;
+  if (sprungStart != null) {
+    t = (performance.now() - sprungStart) / 1000 * zeitlupe.value;
+    if (t > r.zeit) t = r.zeit;
+    simCtx.strokeStyle = 'white';
+    simCtx.lineWidth = 3;
+    zeichneBahn(simCtx, startX, bodenY, planet, r, t, massstab);
+    simCtx.fillStyle = 'white';
+    simCtx.font = '13px Arial';
+    simCtx.fillText('t = ' + zahl(t) + ' s', 50, 61);
+  }
+
+  const x = startX + r.vx * t * massstab;
+  const y = bodenY - (r.vy * t - 0.5 * planet.g * t * t) * massstab;
+  zeichneMaennchen(simCtx, x, y);
+}
+
+// ------------------------------------------------------------
+// Vergleich
+// ------------------------------------------------------------
+const vergleichCanvas = document.getElementById('vergleichCanvas');
+const vergleichCtx = vergleichCanvas.getContext('2d');
+let vergleichStart = null;
+
+function vergleichZeichnen() {
+  const W = vergleichCanvas.width, H = vergleichCanvas.height, bodenY = H - 40;
+  const v = +vRegler.value, winkel = +wRegler.value;
+  const beide = [planeten[vergleichA.value], planeten[vergleichB.value]];
+  const halb = W / 2;
+
+  const massstab = berechneMassstab(beide.map(p => ({ planet: p, v: v, winkel: winkel })), halb, H);
+
+  for (let i = 0; i < 2; i++) {
+    const planet = beide[i];
+    const x0 = i * halb;
+    const r = berechne(planet, v, winkel);
+    const startX = winkel == 90 ? x0 + halb / 2 : x0 + 60;
+
+    zeichneHintergrund(vergleichCtx, x0, halb, H, planet, massstab);
+
+    vergleichCtx.strokeStyle = 'rgba(255,255,255,0.5)';
+    vergleichCtx.lineWidth = 2;
+    vergleichCtx.setLineDash([5, 5]);
+    zeichneBahn(vergleichCtx, startX, bodenY, planet, r, r.zeit, massstab);
+    vergleichCtx.setLineDash([]);
+
+    let t = 0;
+    if (vergleichStart != null) {
+      t = (performance.now() - vergleichStart) / 1000 * zeitlupe.value;
+      if (t > r.zeit) t = r.zeit;
+    }
+    const x = startX + r.vx * t * massstab;
+    const y = bodenY - (r.vy * t - 0.5 * planet.g * t * t) * massstab;
+    zeichneMaennchen(vergleichCtx, x, y);
+  }
+
+  // Trennlinie in der Mitte
+  vergleichCtx.strokeStyle = 'white';
+  vergleichCtx.lineWidth = 2;
+  vergleichCtx.beginPath();
+  vergleichCtx.moveTo(halb, 0);
+  vergleichCtx.lineTo(halb, H);
+  vergleichCtx.stroke();
+}
+
+// ------------------------------------------------------------
+// Texte und Tabellen aktualisieren
+// ------------------------------------------------------------
+function aktualisieren() {
+  const v = +vRegler.value, winkel = +wRegler.value;
+  const planet = planeten[planetAuswahl.value];
+  const r = berechne(planet, v, winkel);
+
+  document.getElementById('vText').textContent = zahl(v) + ' m/s';
+  document.getElementById('wText').textContent = winkel + '°';
+  for (const el of document.querySelectorAll('.vAnzeige')) el.textContent = zahl(v) + ' m/s';
+
+  // Ergebnis Simulator
+  let text = 'Gravitation: <b>' + zahl(planet.g) + ' m/s²</b> (' + Math.round(planet.g / 9.81 * 100) + ' % der Erde)'
+    + ' &nbsp;|&nbsp; Sprunghöhe: <b>' + zahl(r.hoehe) + ' m</b>'
+    + ' &nbsp;|&nbsp; Flugzeit: <b>' + zahl(r.zeit) + ' s</b>';
+  if (winkel < 90) text += ' &nbsp;|&nbsp; Weite: <b>' + zahl(r.weite) + ' m</b>';
+  if (r.zeit < 0.4 && zeitlupe.value == 1) text += '<br>Tipp: Der Sprung ist sehr kurz, nimm am besten eine Zeitlupe.';
+  document.getElementById('simErgebnis').innerHTML = text;
+  document.getElementById('planetInfo').textContent = planet.text;
+
+  // Vergleichstabelle
+  const a = planeten[vergleichA.value], b = planeten[vergleichB.value];
+  const ra = berechne(a, v, winkel), rb = berechne(b, v, winkel);
+  document.getElementById('nameA').textContent = a.name;
+  document.getElementById('nameB').textContent = b.name;
+  let zeilen = '<tr><td>Gravitation</td><td>' + zahl(a.g) + ' m/s²</td><td>' + zahl(b.g) + ' m/s²</td></tr>'
+    + '<tr><td>Sprunghöhe</td><td>' + zahl(ra.hoehe) + ' m</td><td>' + zahl(rb.hoehe) + ' m</td></tr>'
+    + '<tr><td>Flugzeit</td><td>' + zahl(ra.zeit) + ' s</td><td>' + zahl(rb.zeit) + ' s</td></tr>';
+  if (winkel < 90) zeilen += '<tr><td>Weite</td><td>' + zahl(ra.weite) + ' m</td><td>' + zahl(rb.weite) + ' m</td></tr>';
+  document.getElementById('vergleichTabelle').innerHTML = zeilen;
+
+  const faktor = a.g / b.g;
+  if (a == b) {
+    document.getElementById('vergleichText').textContent = 'Wähle zwei verschiedene Himmelskörper aus.';
+  } else {
+    document.getElementById('vergleichText').textContent =
+      'Auf ' + b.name + ' springt man ' + zahl(faktor) + '-mal so hoch wie auf ' + a.name
+      + ' und ist auch ' + zahl(faktor) + '-mal so lange in der Luft.';
+  }
+
+  // Übersicht über alle Planeten
+  let tabelle = '';
+  for (const p of planeten) {
+    const rp = berechne(p, v, 90);
+    tabelle += '<tr><td>' + p.name + (p.theoretisch ? ' *' : '') + '</td><td>' + zahl(p.g) + '</td><td>'
+      + Math.round(p.g / 9.81 * 100) + ' %</td><td>' + zahl(rp.hoehe) + ' m</td><td>' + zahl(rp.zeit) + ' s</td></tr>';
+  }
+  document.getElementById('uebersicht').innerHTML = tabelle;
+}
+
+// ------------------------------------------------------------
+// Events
+// ------------------------------------------------------------
+document.getElementById('springen').onclick = springen;
+document.getElementById('loeschen').onclick = function () { alteSpruenge = []; };
+document.getElementById('beideSpringen').onclick = function () { vergleichStart = performance.now(); };
+
+planetAuswahl.onchange = function () { aktualisieren(); springen(); };
+vRegler.oninput = aktualisieren;
+wRegler.oninput = aktualisieren;
+zeitlupe.onchange = aktualisieren;
+vergleichA.onchange = aktualisieren;
+vergleichB.onchange = aktualisieren;
+
+// Animation: jedes Bild neu zeichnen
+function animation() {
+  simulatorZeichnen();
+  vergleichZeichnen();
+  requestAnimationFrame(animation);
+}
+
+aktualisieren();
+animation();
+</script>
+</body>
+</html>
