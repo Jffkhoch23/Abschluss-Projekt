@@ -3,55 +3,118 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gravity Simulator – Springen im Sonnensystem</title>
 <style>
-:root{--bg:#0b1020;--bar:#101a36;--pn:#131c34;--ln:#2c3860;--tx:#e8ebf3;--mu:#98a2bd;--bl:#2f6fed;--rd:#e8432a;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*,*::before,*::after{box-sizing:inherit}
-body{margin:0;font:15px/1.5 "Segoe UI",Roboto,Arial,sans-serif;color:var(--tx);background:var(--bg)}
-.bar{display:flex;align-items:center;gap:18px;flex-wrap:wrap;background:var(--bar);border-bottom:1px solid var(--ln);padding:0 16px;min-height:48px}
-.brand{font-weight:700;font-size:17px}
-nav{display:flex;flex-wrap:wrap}
-nav a{color:var(--mu);text-decoration:none;padding:13px 13px 10px;border-bottom:3px solid transparent}
-nav a:hover{color:var(--tx)}nav a.on{color:#fff;border-bottom-color:var(--rd)}
-:focus-visible{outline:2px solid #8ab4ff;outline-offset:2px}
-.tab{display:none}.tab.on{display:block}
-.pg{max-width:960px;margin:0 auto;padding:26px 16px 40px}
-h1{font-size:34px;line-height:1.2;margin:0 0 10px}h2{font-size:24px;margin:0 0 8px}h3{font-size:17px;margin:18px 0 6px}
-p{margin:0 0 12px}.mu{color:var(--mu)}
-.btn{font:inherit;font-weight:600;color:#fff;background:var(--bl);border:0;border-radius:4px;padding:9px 16px;cursor:pointer}
-.btn:hover{background:#2560d6}.btn.r{background:var(--rd)}.btn.r:hover{background:#cf3a22}.btn.g{background:#1a2442;border:1px solid var(--ln);font-weight:400}.btn.g:hover{background:#222f58}
-.row2{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
-.card{background:var(--pn);border:1px solid var(--ln);border-radius:4px;padding:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
-.pl{display:flex;align-items:center;gap:8px;width:100%;text-align:left;font:inherit;color:var(--tx);background:none;border:1px solid transparent;border-radius:4px;padding:6px 8px;cursor:pointer}
-.pl small{margin-left:auto;color:var(--mu)}.pl i,.dot{display:inline-block;width:12px;height:12px;border-radius:50%;flex:none}
-.pl:hover{background:#1a2442}.pl.on{background:#1b2850;border-color:var(--bl)}.grid .pl{background:var(--pn);border-color:var(--ln);padding:10px}
-#t-sim.on{display:grid;grid-template-columns:250px minmax(0,1fr);height:calc(100vh - 49px);min-height:520px}
-#t-sim.fs{position:fixed;inset:0;z-index:50;height:auto;background:var(--bg)}
-#t-sim:fullscreen{height:100vh;background:var(--bg)}
-.side{background:var(--pn);border-right:1px solid var(--ln);padding:12px;overflow:auto}
-.side h3{margin:14px 0 6px;font-size:14px;color:var(--mu);font-weight:600}.side h3:first-child{margin-top:0}
-.main{display:flex;flex-direction:column;min-width:0;min-height:0}
-.cw{position:relative;flex:1;min-height:0}.cw.h{flex:none;height:clamp(300px,50vh,460px)}
-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;background:#000}
-.ro{display:flex;flex-wrap:wrap;gap:4px 26px;padding:9px 14px;background:var(--bar);border-top:1px solid var(--ln)}
-.ro span{display:block;font-size:12px;color:var(--mu)}.ro b{font-size:18px}
-#info{position:absolute;top:10px;right:10px;width:min(320px,calc(100% - 20px));background:rgba(11,16,32,.94);border:1px solid var(--ln);border-radius:4px;padding:12px}
-#info[hidden]{display:none}
-.warn{background:#3a2a0e;border:1px solid #7a5a1a;color:#ffd78a;border-radius:4px;padding:7px 10px;font-size:14px;margin-top:8px}
-label{display:block;font-size:13px;color:var(--mu);margin:10px 0}label b{color:var(--tx)}
-input[type=range]{width:100%;accent-color:var(--bl)}
-select{font:inherit;font-size:14px;color:var(--tx);background:#1a2442;border:1px solid var(--ln);border-radius:4px;padding:6px;width:100%}
-.side .btn{width:100%;margin-top:8px}
-.ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:4px 16px;align-items:end;margin-bottom:12px}.ctl .btn{margin-bottom:10px}
-table{width:100%;border-collapse:collapse}th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--ln)}th{color:var(--mu);font-weight:600}
-details{border:1px solid var(--ln);border-radius:4px;background:var(--pn);margin:8px 0}summary{padding:10px 14px;cursor:pointer;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center}
-details>p,details>div{padding:0 14px 12px;margin:0}
-.bt{display:grid;grid-template-columns:130px 1fr 130px;gap:12px;align-items:center;margin:7px 0;font-size:14px}.bar2{height:18px;background:#0e1528}.bar2 div{height:100%;transition:width .4s}
-.f{background:#0e1528;border-left:3px solid var(--bl);padding:9px 14px;margin:8px 0;font-size:17px}
-@media(max-width:800px){#t-sim.on{display:block;height:auto}.side{border-right:0;border-bottom:1px solid var(--ln)}.main .cw{flex:none;height:62vh}#t-sim.fs{overflow:auto}.bt{grid-template-columns:90px 1fr 100px;font-size:13px}h1{font-size:28px}}
-@media(prefers-reduced-motion:reduce){.bar2 div{transition:none}}
+:root {
+  --bg:#f5f4f0; --bar:#fbfaf7; --pn:#ffffff; --ln:#d9d9d2;
+  --tx:#222722; --mu:#656e67; --bl:#355f4b; --rd:#355f4b;
+  --subtle:#eeefe9; --forest:#244a39;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px)
+}
+html {scroll-padding-top:70px}
+*,*::before,*::after {box-sizing:inherit}
+body {margin:0;font:15px/1.65 'Segoe UI',Arial,sans-serif;color:var(--tx);background:var(--bg);letter-spacing:.005em}
+button,select,input {font-family:inherit}
+.bar {height:auto;min-height:70px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 clamp(20px,4vw,66px);background:var(--bar);border-bottom:1px solid var(--ln)}
+.brand {font-size:15px;font-weight:750;letter-spacing:-.025em;white-space:nowrap}
+.brand::before {content:'';display:inline-block;width:12px;height:12px;border:3px solid var(--forest);border-radius:50%;vertical-align:-1px;margin-right:11px}
+nav {display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+nav a {color:var(--mu);font-size:12px;font-weight:600;letter-spacing:.035em;text-decoration:none;padding:25px 0 23px;border-bottom:2px solid transparent;transition:color .15s}
+nav a:hover {color:var(--tx)}
+nav a.on {color:var(--forest);border-bottom-color:var(--forest)}
+:focus-visible {outline:2px solid var(--forest);outline-offset:3px}
+.tab {display:none}.tab.on {display:block}
+.pg {max-width:1120px;margin:auto;padding:54px 32px 88px}
+h1,h2,h3 {letter-spacing:-.04em;line-height:1.18;color:#202b24}
+h1 {font-weight:690;font-size:clamp(38px,5.2vw,68px);max-width:790px;margin:0 0 21px}
+h2 {font-size:clamp(30px,3.1vw,43px);font-weight:680;margin:0 0 16px}
+h3 {font-size:19px;font-weight:680;margin:42px 0 16px}
+p {margin:0 0 18px}.mu {color:var(--mu)}
+#t-start .pg::before {content:'INTERAKTIVES PHYSIKPROJEKT  /  SONNENSYSTEM';display:block;color:var(--forest);font-size:11px;letter-spacing:.16em;font-weight:750;margin-bottom:25px}
+#t-start .pg>p:first-of-type {max-width:670px!important;font-size:17px!important;line-height:1.8;color:#59635a}
+#t-start .pg>.row2 {margin:31px 0 39px}
+.btn {font-size:13px;font-weight:670;letter-spacing:.015em;color:#fff;background:var(--forest);border:1px solid var(--forest);border-radius:5px;padding:12px 18px;cursor:pointer;transition:background .15s,border-color .15s,transform .15s;white-space:normal}
+.btn:hover,.btn.r:hover {background:#173628;border-color:#173628}
+.btn:active {transform:translateY(1px)}
+.btn.r {background:var(--forest);border-color:var(--forest)}
+.btn.g {background:transparent;border:1px solid #cbd1ca;color:var(--forest);font-weight:600}
+.btn.g:hover {background:#e8ede7;border-color:var(--forest)}
+.row2 {display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
+.card {background:var(--pn);border:1px solid var(--ln);border-radius:7px;padding:23px 26px}
+#fact {max-width:100%!important;background:#e8ede6;border-color:#d9e2d8;font-size:16px;line-height:1.8}
+#t-start ol {margin:0 0 32px!important;padding:0!important;list-style:none;counter-reset:steps;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+#t-start ol li {counter-increment:steps;background:#fff;border:1px solid var(--ln);padding:22px 20px;border-radius:6px;font-size:14px;line-height:1.65}
+#t-start ol li::before {content:'0' counter(steps);display:block;font-size:12px;color:var(--forest);font-weight:800;letter-spacing:.1em;margin-bottom:21px}
+.grid {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.pl {display:flex;align-items:center;gap:11px;width:100%;text-align:left;font:inherit;color:var(--tx);background:transparent;border:1px solid transparent;border-radius:5px;padding:8px 10px;cursor:pointer;transition:background .15s,border-color .15s}
+.pl small {margin-left:auto;color:var(--mu);font-size:12px;font-variant-numeric:tabular-nums}
+.pl i,.dot {display:inline-block;width:9px;height:9px;border-radius:50%;flex:none}
+.pl:hover {background:#ebefea}.pl.on {background:#e5ece5;border-color:#a0b3a3;color:#1c4831;font-weight:650}
+.grid .pl {background:#fff;border-color:var(--ln);padding:20px 14px;min-height:75px}
+.grid .pl:hover {border-color:#7b9983;background:#f5f9f4}
+#t-sim.on {display:grid;grid-template-columns:286px minmax(0,1fr);height:calc(100vh - 70px);min-height:570px}
+#t-sim.fs {position:fixed;inset:0;z-index:50;height:auto;background:var(--bg)}
+#t-sim:fullscreen {height:100vh;background:var(--bg)}
+.side {background:#fbfaf7;border-right:1px solid var(--ln);padding:20px 18px 32px;overflow:auto;scrollbar-width:thin}
+.side h3 {font-size:11px;font-weight:750;letter-spacing:.13em;text-transform:uppercase;color:#647467;margin:29px 0 10px}
+.side h3:first-child {margin-top:0}
+#pls {display:grid;grid-template-columns:1fr 1fr;gap:5px}
+#pls .pl {font-size:13px;padding:9px 8px;border:1px solid #e2e5de;background:#fff}
+#pls .pl small {display:none}
+#pls .pl.on {border-color:#8ca994;background:#e9f0e7}
+.main {display:flex;flex-direction:column;min-width:0;min-height:0;background:#101820}
+.cw {position:relative;flex:1;min-height:0;overflow:hidden}
+.cw.h {flex:none;height:clamp(320px,50vh,520px);border:1px solid #d7d9d2;border-radius:7px;overflow:hidden}
+canvas {position:absolute;inset:0;width:100%;height:100%;display:block;background:#000}
+.ro {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;background:#fbfaf7;border-top:1px solid var(--ln);color:var(--tx);padding:0}
+.ro>div {padding:15px 14px;border-right:1px solid var(--ln)}
+.ro>div:last-child {border-right:0}
+.ro span {display:block;color:var(--mu);font-size:11px;margin-bottom:3px;line-height:1.45}
+.ro b {font-weight:700;font-size:19px;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+#info {position:absolute;top:20px;right:20px;width:min(325px,calc(100% - 40px));background:rgba(250,250,246,.97);color:#26322a;border:1px solid #cfd7cf;border-radius:6px;padding:18px;box-shadow:0 12px 35px #0003}
+#info[hidden] {display:none}
+.warn {background:#faf1dc;border:1px solid #eadcb8;color:#72552c;border-radius:5px;padding:10px 12px;font-size:13px;margin-top:10px}
+label {display:block;color:var(--mu);font-size:12px;font-weight:600;margin:16px 0}
+label b {color:var(--tx);font-variant-numeric:tabular-nums}
+input[type=range] {width:100%;margin:12px 0 0;accent-color:var(--forest);cursor:pointer}
+input[type=checkbox] {accent-color:var(--forest);margin-top:3px}
+select {font-size:13px;color:var(--tx);background:#fff;border:1px solid #cdd4cb;border-radius:5px;padding:11px;width:100%;margin-top:7px}
+.side .btn {width:100%;margin-top:9px}
+#go {margin-top:20px;padding:14px}
+#hint {line-height:1.6!important;color:#677269!important}
+.ctl {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 20px;align-items:end;background:#fff;border:1px solid var(--ln);padding:18px 22px;margin:28px 0 20px;border-radius:7px}
+.ctl label {margin:5px 0}.ctl .btn {margin-bottom:0;min-height:43px}
+#pre .btn {padding:8px 12px;font-size:12px}
+table {width:100%;border-collapse:collapse;background:#fff;font-size:14px}
+th,td {padding:14px 17px;text-align:left;border-bottom:1px solid var(--ln)}
+th {color:var(--mu);font-size:12px;font-weight:700;background:#f0f1ec}
+td:not(:first-child) {font-variant-numeric:tabular-nums}
+details {border:1px solid var(--ln);border-radius:6px;background:#fff;margin:10px 0;overflow:hidden}
+summary {padding:16px 20px;cursor:pointer;display:flex;flex-wrap:wrap;gap:7px 19px;align-items:center;font-size:14px}
+summary:hover {background:#f5f6f1}
+details[open] summary {border-bottom:1px solid var(--ln)}
+details>p,details>div {padding:17px 20px;margin:0;line-height:1.75}
+.bt {display:grid;grid-template-columns:140px 1fr 145px;gap:15px;align-items:center;margin:14px 0;font-size:13px}
+.bar2 {height:11px;background:#edf0ea;border-radius:2px;overflow:hidden}
+.bar2 div {height:100%;transition:width .4s}
+.f {background:#fff;border:1px solid var(--ln);border-left:3px solid var(--forest);border-radius:3px;padding:18px 20px;margin:10px 0;font-size:17px;font-family:Georgia,'Times New Roman',serif}
+#t-auswertung .card {margin:25px 0 38px}
+#t-physik .pg>p {max-width:780px;line-height:1.85}
+#t-vergleich .pg>p,#t-auswertung .pg>p,#t-daten .pg>p {max-width:770px;line-height:1.8}
+@media(max-width:1100px) {.bar{gap:12px;padding:0 24px}nav{gap:13px}nav a{font-size:11px}.ro b{font-size:16px}}
+@media(max-width:800px) {
+ .bar{padding:15px 20px;align-items:flex-start;gap:10px}.brand{padding-top:2px}nav{width:100%;gap:16px;overflow-x:auto;flex-wrap:nowrap}nav a{white-space:nowrap;padding:7px 0 9px}
+ .pg{padding:36px 20px 65px}h1{font-size:39px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #t-start ol{grid-template-columns:1fr;gap:8px}#t-start ol li{padding:16px}#t-start ol li::before{margin-bottom:5px}
+ #t-sim.on{display:block;height:auto}.side{border-right:0;border-bottom:1px solid var(--ln);padding:22px 20px}#pls{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .main .cw{flex:none;height:60vh;min-height:320px}#t-sim.fs{overflow:auto}
+ .ro{grid-template-columns:repeat(3,minmax(0,1fr))}.ro>div{border-bottom:1px solid var(--ln)}
+ .ctl{grid-template-columns:repeat(2,minmax(0,1fr));padding:15px}.bt{grid-template-columns:85px 1fr 100px;gap:9px;font-size:11px}
+}
+@media(max-width:480px) {#pls{grid-template-columns:repeat(2,1fr)}.ro{grid-template-columns:repeat(2,minmax(0,1fr))}.ctl{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}.grid .pl{min-height:65px;padding:12px 9px}.grid .pl small{font-size:10px}}
+@media(prefers-reduced-motion:reduce) {*,*::before,*::after{transition:none!important}}
 </style></head><body>
-<header class="bar"><span class="brand">Gravity Simulator</span><nav id="nav"></nav></header>
+<header class="bar"><span class="brand">GRAVITY / LAB</span><nav id="nav"></nav></header>
 
 <section class="tab" id="t-start"><div class="pg">
 <h1>Wie hoch springst du im Sonnensystem?</h1>
@@ -61,7 +124,7 @@ details>p,details>div{padding:0 14px 12px;margin:0}
 <h3>So funktioniert es</h3>
 <ol style="margin:0 0 20px;padding-left:20px"><li>Im Simulator einen Himmelskörper wählen.</li><li>Absprunggeschwindigkeit und Winkel einstellen.</li><li>Auf „Springen“ klicken und die Flugbahn beobachten. Frühere Sprünge bleiben als farbige Linien im Hintergrund sichtbar.</li></ol>
 <h3>Direkt losspringen</h3><div class="grid" id="sp"></div>
-<p class="mu" style="margin-top:28px;font-size:13px">Physik-Abschlussprojekt, Klasse 10. Projekt von [Name eintragen].</p></div></section>
+<p class="mu" style="margin-top:28px;font-size:13px">Physik-Abschlussprojekt, Klasse 10. Interaktive Simulation und Auswertung.</p></div></section>
 
 <section class="tab" id="t-sim">
 <div class="side"><h3>Himmelskörper</h3><div id="pls"></div>
