@@ -3,79 +3,87 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Interaktiver Simulator: Wie hoch und wie lange springt man auf Erde, Mond, Mars und anderen Himmelskörpern?">
+<meta name="author" content="Schulprojekt">
 <title>Springen im Sonnensystem</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪐</text></svg>">
 <style>
+  html { scroll-behavior: smooth; }
   body {
     font-family: Arial, sans-serif;
     max-width: 900px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0 20px 20px;
     background: #f4f4f4;
     color: #222;
     line-height: 1.5;
   }
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    background: #1a3d6d;
+    margin: 0 -20px;
+    padding: 10px 20px;
+  }
+  nav a { color: white; text-decoration: none; margin-right: 15px; font-size: 15px; white-space: nowrap; }
+  nav a:hover { text-decoration: underline; }
   h1 { color: #1a3d6d; }
   h2 {
     color: #1a3d6d;
     border-bottom: 2px solid #1a3d6d;
     padding-bottom: 5px;
     margin-top: 40px;
+    scroll-margin-top: 60px;
   }
-  .box {
-    background: white;
-    border: 1px solid #ccc;
-    padding: 15px;
-    margin-bottom: 15px;
-  }
-  canvas {
-    width: 100%;
-    border: 1px solid #333;
-    display: block;
-  }
-  button {
-    background: #1a3d6d;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    font-size: 15px;
-    cursor: pointer;
-  }
+  a { color: #1a3d6d; }
+  .box { background: white; border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; }
+  canvas { width: 100%; border: 1px solid #333; display: block; }
+  button { background: #1a3d6d; color: white; border: none; padding: 8px 15px; font-size: 15px; cursor: pointer; }
   button:hover { background: #2a5a9d; }
   label { display: inline-block; margin: 5px 20px 5px 0; }
   select { padding: 3px; font-size: 14px; }
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    background: white;
-  }
-  th, td {
-    border: 1px solid #ccc;
-    padding: 6px 10px;
-    text-align: left;
-  }
+  table { border-collapse: collapse; width: 100%; background: white; }
+  th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
   th { background: #dde6f2; }
+  .tabelle { overflow-x: auto; }
   .formel {
-    font-family: 'Times New Roman', serif;
-    font-size: 20px;
-    background: white;
-    padding: 10px;
-    border-left: 4px solid #1a3d6d;
-    margin: 10px 0;
+    font-family: 'Times New Roman', serif; font-size: 20px; background: white;
+    padding: 10px; border-left: 4px solid #1a3d6d; margin: 10px 0;
   }
   .hinweis { color: #666; font-size: 14px; }
+  footer {
+    margin-top: 50px; padding-top: 15px; border-top: 1px solid #ccc;
+    color: #666; font-size: 14px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  }
+  @media (max-width: 600px) {
+    label { display: block; }
+    th, td { padding: 4px 6px; font-size: 14px; }
+  }
 </style>
 </head>
 <body>
 
+<nav>
+  <a href="#top">Start</a>
+  <a href="#simulator">Simulator</a>
+  <a href="#vergleich">Vergleich</a>
+  <a href="#ueberblick">Überblick</a>
+  <a href="#physik">Physik</a>
+  <a href="#ergebnis">Ergebnis</a>
+  <a href="#quellen">Quellen</a>
+</nav>
+
+<header id="top">
 <h1>Wie hoch springt man im Sonnensystem?</h1>
 <p>
   In diesem Projekt untersuche ich, wie die Schwerkraft die Sprunghöhe und die Flugbahn
   eines Menschen auf verschiedenen Himmelskörpern beeinflusst. Dafür habe ich einen kleinen
   Simulator programmiert, in dem ein Astronaut auf verschiedenen Planeten springen kann.
 </p>
+</header>
 
+<main>
 <!-- ===================== SIMULATOR ===================== -->
-<h2>1. Simulator</h2>
+<h2 id="simulator">1. Simulator</h2>
 <div class="box">
   <label>Himmelskörper:
     <select id="planetAuswahl"></select>
@@ -100,7 +108,7 @@
   <button id="loeschen">Spuren löschen</button>
 </div>
 
-<canvas id="simCanvas" width="800" height="400"></canvas>
+<canvas id="simCanvas" width="800" height="400" aria-label="Simulation des Sprungs"></canvas>
 
 <div class="box">
   <p id="simErgebnis"></p>
@@ -108,7 +116,7 @@
 </div>
 
 <!-- ===================== VERGLEICH ===================== -->
-<h2>2. Vergleich von zwei Himmelskörpern</h2>
+<h2 id="vergleich">2. Vergleich von zwei Himmelskörpern</h2>
 <p>Beide Astronauten springen mit derselben Geschwindigkeit und demselben Winkel wie oben eingestellt.
   Der Maßstab ist für beide gleich.</p>
 <div class="box">
@@ -117,29 +125,33 @@
   <button id="beideSpringen">Beide springen</button>
 </div>
 
-<canvas id="vergleichCanvas" width="800" height="350"></canvas>
+<canvas id="vergleichCanvas" width="800" height="350" aria-label="Vergleich zweier Sprünge"></canvas>
 
+<div class="tabelle">
 <table style="margin-top: 10px;">
   <thead>
     <tr><th></th><th id="nameA"></th><th id="nameB"></th></tr>
   </thead>
   <tbody id="vergleichTabelle"></tbody>
 </table>
+</div>
 <p id="vergleichText"></p>
 
 <!-- ===================== TABELLE ===================== -->
-<h2>3. Alle Himmelskörper im Überblick</h2>
+<h2 id="ueberblick">3. Alle Himmelskörper im Überblick</h2>
 <p>Senkrechter Sprung mit v₀ = <span class="vAnzeige"></span>.</p>
+<div class="tabelle">
 <table>
   <thead>
     <tr><th>Himmelskörper</th><th>g in m/s²</th><th>im Vergleich zur Erde</th><th>Sprunghöhe</th><th>Flugzeit</th></tr>
   </thead>
   <tbody id="uebersicht"></tbody>
 </table>
+</div>
 <p class="hinweis">* Jupiter und die Sonne haben keine feste Oberfläche. Das ist nur ein theoretischer Vergleich.</p>
 
 <!-- ===================== PHYSIK ===================== -->
-<h2>4. Die Physik dahinter</h2>
+<h2 id="physik">4. Die Physik dahinter</h2>
 <p>
   Beim Absprung hat der Astronaut die Geschwindigkeit v₀. Die Schwerkraft bremst ihn mit der
   Beschleunigung g ab, bis er am höchsten Punkt kurz stehen bleibt und wieder runterfällt.
@@ -165,7 +177,7 @@
 </ul>
 
 <!-- ===================== ERGEBNIS ===================== -->
-<h2>5. Ergebnis</h2>
+<h2 id="ergebnis">5. Ergebnis</h2>
 <p>
   Bei v₀ = 3 m/s springt man auf der Erde ca. 0,46 m hoch. Auf dem Mond sind es schon 2,78 m und
   auf Pluto sogar 7,26 m, weil Pluto die schwächste Schwerkraft hat. Dort ist man auch am längsten
@@ -180,12 +192,23 @@
   Das zeigt, dass die Gravitation direkt bestimmt, wie hoch und wie lange man springt.
 </p>
 
-<h2>Quellen</h2>
+<h2 id="quellen">Quellen</h2>
 <ul>
-  <li>NASA Planetary Fact Sheets (Werte für g)</li>
+  <li><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/" target="_blank" rel="noopener">NASA Planetary Fact Sheet</a> (Werte für g der Planeten)</li>
+  <li><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html" target="_blank" rel="noopener">NASA Moon Fact Sheet</a></li>
+  <li><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/plutofact.html" target="_blank" rel="noopener">NASA Pluto Fact Sheet</a></li>
+  <li><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html" target="_blank" rel="noopener">NASA Sun Fact Sheet</a></li>
 </ul>
+</main>
+
+<footer>
+  <span>© <span id="jahr"></span> Schulprojekt „Springen im Sonnensystem“</span>
+  <a href="#top">↑ Nach oben</a>
+</footer>
 
 <script>
+document.getElementById('jahr').textContent = new Date().getFullYear();
+
 // ------------------------------------------------------------
 // Daten der Himmelskörper
 // ------------------------------------------------------------
